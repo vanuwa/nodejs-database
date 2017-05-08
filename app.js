@@ -57,7 +57,7 @@ class DB {
         const combined = this._fromObjToString(db_obj);
 
         return this._write(combined)
-          .then(resolve)
+          .then(() => resolve(record))
           .catch(reject);
       });
     });
@@ -67,7 +67,6 @@ class DB {
     const hash = crypto.createHash('sha256');
     const salt = `${obj.name}|${obj.phone}`;
 
-    // return crypto.randomBytes(16).toString("hex");
     return hash.update(salt).digest('hex');
   }
 
@@ -113,16 +112,34 @@ class DB {
     });
   }
 
-  update (id, record) {
-    // sure file exists
+  update (id, value) {
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.file_path, 'utf8', (err, content) => {
+        if (err) {
+          return reject(err);
+        }
 
-    // read content
+        const db_obj = this._fromStringToObj(content);
 
-    // find record
+        if (!db_obj[id]) {
+          const error = new Error(`Record with id ${id} does not exist.`);
 
-    // update record
+          return reject(error);
+        }
 
-    // write content
+        const new_id = this._generateId(value);
+        const record = Object.assign({}, value, { id: new_id });
+
+        delete db_obj[id];
+        db_obj[record.id] = record;
+
+        const combined = this._fromObjToString(db_obj);
+
+        return this._write(combined)
+          .then(() => resolve(record))
+          .catch(reject);
+      });
+    });
   }
 
   read (id) {
@@ -157,9 +174,6 @@ class DB {
 
   list () {
     return new Promise((resolve, reject) => {
-      // sure file exists
-
-      // read content
       fs.readFile(this.file_path, 'utf8', (err, content) => {
         if (err) {
           if (err.code === 'ENOENT') {
@@ -181,15 +195,23 @@ const instance = new DB();
 instance.list()
   .then((content) => {
     console.log('[ LIST ]', content || '~nothing to show~' );
+
+    instance.create({ name: 'Vasil', phone: '023456' })
+      .then((result) => {
+        console.log('[ CREATE ] ', result);
+
+        instance.update('b69f1c5bbbb1ddd43f3fbb2b66a7d5566cf5f5335f29c50956d803fb84f91ae9',{ name: 'Petro', phone: '023456' })
+          .then((result) => {
+            console.log('[ UPDATE ] ', result);
+          })
+          .catch((exception) => {
+            console.log('[ UPDATE ][ EXCEPTION ]', exception);
+          });
+      })
+      .catch((exception) => {
+        console.log('[ CREATE ][ EXCEPTION ]', exception);
+      });
   })
   .catch((exception) => {
     console.log('[ LIST ][ EXCEPTION ]', exception);
-  });
-
-instance.create({ name: 'Vasil', phone: '023456' })
-  .then((result) => {
-    console.log('[ CREATE ] ', result);
-  })
-  .catch((exception) => {
-    console.log('[ CREATE ][ EXCEPTION ]', exception);
   });
