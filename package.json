@@ -1,0 +1,33 @@
+{
+  "name": "nodejs-database",
+  "version": "0.1.0",
+  "description": "Custom database project for better understanding of what are the under the hood: processes,  principles, issues, etc.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vanuwa/nodejs-database.git"
+  },
+  "keywords": [
+    "database",
+    "db",
+    "nodejs",
+    "rest",
+    "http",
+    "https",
+    "file",
+    "CRUD",
+    "create",
+    "read",
+    "update",
+    "delete"
+  ],
+  "author": "Ivan Kebal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vanuwa/nodejs-database/issues"
+  },
+  "homepage": "https://github.com/vanuwa/nodejs-database#readme"
+}
