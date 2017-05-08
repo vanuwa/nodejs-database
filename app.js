@@ -154,13 +154,6 @@ class DB {
         return resolve(db_obj[id]);
       });
     });
-    // sure file exists
-
-    // read content
-
-    // find record
-
-    // return record
   }
 
   find (query) {
@@ -172,15 +165,30 @@ class DB {
   }
 
   remove (id) {
-    // sure file exists
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.file_path, 'utf8', (err, content) => {
+        if (err) {
+          return reject(err);
+        }
 
-    // read content
+        const db_obj = this._fromStringToObj(content);
 
-    // find record
+        if (!db_obj[id]) {
+          const error = new Error(`Nothing to remove. Record with id ${id} does not exist.`);
 
-    // remove record
+          return reject(error);
+        }
 
-    // write to file
+        const record = db_obj[id];
+        delete db_obj[id];
+
+        const modified = this._fromObjToString(db_obj);
+
+        return this._write(modified)
+          .then(() => resolve(record))
+          .catch(reject);
+      });
+    });
   }
 
   list () {
@@ -223,12 +231,12 @@ instance.list()
           .then((result) => {
             console.log('[ UPDATE ] ', result);
 
-            instance.read('8d5027f341c83b21e7077f4b511f99a7181f0b1143deac7322ed1b52751ac5b1')
+            instance.remove('8d5027f341c83b21e7077f4b511f99a7181f0b1143deac7322ed1b52751ac5b1')
               .then((record) => {
-                console.log('[ READ ] ', record);
+                console.log('[ REMOVE ] ', record);
               })
               .catch((exception) => {
-                console.log('[ READ ][ EXCEPTION ]', exception);
+                console.log('[ REMOVE ][ EXCEPTION ]', exception);
               });
           })
           .catch((exception) => {
