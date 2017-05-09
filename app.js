@@ -157,11 +157,31 @@ class DB {
   }
 
   find (query) {
-    // sure file exists
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.file_path, 'utf8', (err, content) => {
+        if (err) {
+          if (err.code === 'ENOENT') {
+            return resolve([]);
+          }
 
-    // read content
+          return reject(err);
+        }
 
-    // find record
+        const db_obj = this._fromStringToObj(content);
+
+        const found_records = Object.keys(db_obj).reduce((result, key) => {
+          const record = db_obj[key];
+
+          if (record.name.indexOf(query) > -1 || record.phone.indexOf(query) > -1) {
+            result.push(record);
+          }
+
+          return result;
+        }, []);
+
+        return resolve(found_records);
+      });
+    });
   }
 
   remove (id) {
@@ -211,6 +231,14 @@ class DB {
 
 const instance = new DB();
 
+instance.find('Vasil')
+  .then((records) => {
+    console.log('[ FIND ] ', records);
+  })
+  .catch((exception) => {
+    console.log('[ FIND ][ EXCEPTION ] ', exception);
+  });
+
 instance.read('8d5027f341c83b21e7077f4b511f99a7181f0b1143deac7322ed1b52751ac5b1')
   .then((record) => {
     console.log('[ READ ] ', record);
@@ -227,9 +255,17 @@ instance.list()
       .then((result) => {
         console.log('[ CREATE ] ', result);
 
-        instance.update('b69f1c5bbbb1ddd43f3fbb2b66a7d5566cf5f5335f29c50956d803fb84f91ae9',{ name: 'Petro', phone: '023456' })
+        instance.update('b69f1c5bbbb1ddd43f3fbb2b66a7d5566cf5f5335f29c50956d803fb84f91ae9', { name: 'Petro', phone: '023456' })
           .then((result) => {
             console.log('[ UPDATE ] ', result);
+
+            instance.find('Vasil')
+              .then((records) => {
+                console.log('[ FIND ] ', records);
+              })
+              .catch((exception) => {
+                console.log('[ FIND ][ EXCEPTION ] ', exception);
+              });
 
             instance.remove('8d5027f341c83b21e7077f4b511f99a7181f0b1143deac7322ed1b52751ac5b1')
               .then((record) => {
